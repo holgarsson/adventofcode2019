@@ -8,6 +8,8 @@ namespace Day2
 {
     class Program
     {
+        private static string[] _input => File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "Puzzles", "puzzle2_0.txt")).Split(",");
+
         static async Task Main(string[] args)
         {
             Console.WriteLine("Hello World!");
@@ -15,8 +17,8 @@ namespace Day2
             if (await VerifyTestInputsPart1() == false)
                 return;
 
-            string[] input = File.ReadAllText(Path.Combine(Directory.GetCurrentDirectory(), "Puzzles", "puzzle2_0.txt")).Split(",");
-            int[] intCodes = input.Select(v => int.Parse(v)).ToArray();
+            
+            int[] intCodes = _input.Select(v => int.Parse(v)).ToArray();
 
             // First part
             // Replace value at position 1 with 12 and position 2 with 2
@@ -26,6 +28,25 @@ namespace Day2
             intCodes = await RunPart1(intCodes);
 
             Console.WriteLine($"Part1 - Value at position 0: {intCodes[0]}");
+
+            var foundPart2 = false;
+            for (var i = 0; i < 100; i++)
+            {
+                if (foundPart2 == true)
+                    break;
+
+                for (var j = 0; j < 100; j++)
+                {
+                    var result = await RunPart2(i, j);
+                    if (result.Contains("True"))
+                    {
+                        foundPart2 = true;
+                        Console.WriteLine(result);
+                    }
+                }
+            }
+
+            Console.Read();
         }
 
         static Task<int[]> RunPart1(int[] intCodes)
@@ -80,6 +101,50 @@ namespace Day2
 
             return true;
 
+        }
+
+        static Task<string> RunPart2(int noun, int verb)
+        {
+            int[] intCodes = _input.Select(v => int.Parse(v)).ToArray();
+
+            intCodes[1] = noun;
+            intCodes[2] = verb;
+
+            int currentPos = 0;
+
+            while (true)
+            {
+                int opCode;
+                opCode = intCodes[currentPos];
+                if (opCode == 99)
+                    break;
+
+                int storePos = intCodes[currentPos + 3];
+                int pos1 = intCodes[currentPos + 1];
+                int pos2 = intCodes[currentPos + 2];
+
+                // Addition
+                if (opCode == 1)
+                {
+                    intCodes[storePos] = intCodes[pos1] + intCodes[pos2];
+                }
+                else if (opCode == 2) // Multiplication
+                {
+                    intCodes[storePos] = intCodes[pos1] * intCodes[pos2];
+                }
+
+                currentPos = currentPos += 4;
+
+            }
+
+            string result = "False";
+
+            if (intCodes[0] == 19690720)
+            {
+                result = $"True: 100 * {noun} + {verb} = {100*noun+verb}";
+            }
+
+            return Task.FromResult(result);
         }
     }
 }
